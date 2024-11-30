@@ -65,6 +65,7 @@ class InputFrame(tk.Frame):
         self.grid_rowconfigure(4, weight=1)
         self.grid_rowconfigure(5, weight=1)
         self.grid_rowconfigure(6, weight=1)
+        self.grid_rowconfigure(7, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
@@ -120,25 +121,26 @@ class InputFrame(tk.Frame):
         self.stats_frame.grid(row=2, column=0, sticky="nsew", columnspan=2)
 
     def _validate(self):
-        """Check if the user has entered a dominant and recessive phenotype."""
-        if self.type_cb.get() == "Blood":
+        """Check if the user has entered all inputs."""
+        if hasattr(self, "error_label"):
+            self.error_label.destroy()
+
+        if len(self.parent1_cb.get()) < 1 or len(self.parent2_cb.get()) < 1:
+            self._error("Please enter the zygosity of both parents.")
+            raise ValueError("Please enter the zygosity of both parents.")
+        elif self.type_cb.get() == "Blood":
             return
-        if len(self.dominant_entry.get()) < 1 or len(self.recessive_entry.get()) < 1:
+        elif len(self.dominant_entry.get()) < 1 or len(self.recessive_entry.get()) < 1:
             self._error("Please enter a dominant and recessive phenotype.")
             raise ValueError("Please enter a dominant and recessive phenotype.")
         elif self.dominant_entry.get() == self.recessive_entry.get():
             self._error("Dominant and recessive phenotypes cannot be the same.")
             raise ValueError("Dominant and recessive phenotypes cannot be the same.")
-        else:
-            try:
-                self.error_label.destroy()
-            except AttributeError:
-                pass
 
     def _error(self, message: str):
         """Displays an error message."""
         if hasattr(self, "error_label"):
             self.error_label.destroy()
         self.error_label = tk.Label(self, text=message, fg="red")
-        self.error_label.grid(row=7, column=0, columnspan=2)
+        self.error_label.grid(row=8, column=0, columnspan=2)
     
