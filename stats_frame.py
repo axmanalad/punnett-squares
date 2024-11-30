@@ -55,15 +55,17 @@ class StatsFrame(tk.Frame):
         if self.type == "Monohybrid":
             genotypic_ratio = self._format_monohybrid(genotypic_ratio, "genotypic")
             phenotypic_ratio = self._format_monohybrid(phenotypic_ratio, "phenotypic")
+        elif self.type == "Blood":
+            genotypic_ratio = self._format_blood(genotypic_ratio, "genotypic")
+            phenotypic_ratio = self._format_blood(phenotypic_ratio, "phenotypic")
         return {"genotypic_ratio": genotypic_ratio, "phenotypic_ratio": phenotypic_ratio}
     
     def format_percentage(self):
         """Formats percentage for display."""
         genotypic_ratio = self.stats.get("genotypic_ratio")
         phenotypic_ratio = self.stats.get("phenotypic_ratio")
-        if self.type == "Monohybrid":
-            genotypic_percentage = self._format_monohybrid_percentage(genotypic_ratio, "genotypic")
-            phenotypic_percentage = self._format_monohybrid_percentage(phenotypic_ratio, "phenotypic")
+        genotypic_percentage = self._format_percentage(genotypic_ratio, "genotypic")
+        phenotypic_percentage = self._format_percentage(phenotypic_ratio, "phenotypic")
         return {"genotypic_percentage": genotypic_percentage, "phenotypic_percentage": phenotypic_percentage}
     
     def _format_monohybrid(self, ratio: dict, type: str):
@@ -80,8 +82,26 @@ class StatsFrame(tk.Frame):
                     formatted_ratio += f"{value}:"
         return formatted_ratio[:-1]
     
-    def _format_monohybrid_percentage(self, ratio: dict, type: str):
-        """Formats monohybrid ratios for display."""
+    def _format_blood(self, ratio: dict, type: str):
+        """Formats blood type ratios for display."""
+        formatted_ratio = ""
+        if type == "genotypic":
+            keys = list(ratio.keys())
+            return ":".join([str(ratio.get(key)) for key in keys[:len(ratio)]])
+        elif type == "phenotypic":
+            for key, value in ratio.items():
+                if key == "Type A":
+                    formatted_ratio += f"{value}:"
+                elif key == "Type B":
+                    formatted_ratio += f"{value}:"
+                elif key == "Type AB":
+                    formatted_ratio += f"{value}:"
+                elif key == "Type O":
+                    formatted_ratio += f"{value}:"
+        return formatted_ratio[:-1]
+    
+    def _format_percentage(self, ratio: dict, type: str):
+        """Formats monohybrid percentages for display."""
         formatted_percentage = ""
         if type == "genotypic":
             total = sum(ratio.values())

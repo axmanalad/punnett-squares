@@ -62,6 +62,14 @@ class PunnettSquare:
         else:
             self.genotypes.append(HET)
 
+    def _swap_genotypes(self, a1: str, a2: str):
+        """Swaps the genotypes depending on the parents and punnett square."""
+        if self._detect_zygosity(a1[0], a1[1]) == "Homozygous Recessive" or self._detect_zygosity(a1[0], a1[1]) == "Homozygous Dominant" and \
+            self._detect_zygosity(a2[0], a2[1]) == "Heterozygous" or self._detect_zygosity(a1[0], a1[1]) == "Heterozygous" and \
+                self._detect_zygosity(a2[0], a2[1]) == "Homozygous Recessive" or self._detect_zygosity(a2[0], a2[1]) == "Homozygous Dominant":
+            self._possible_genotypes[1], self._possible_genotypes[2] = self._possible_genotypes[2], self._possible_genotypes[1]
+            self._possible_phenotypes[1], self._possible_phenotypes[2] = self._possible_phenotypes[2], self._possible_phenotypes[1]
+
     def _make_all_combinations(self):
         """Makes all possible combinations of genotypes."""
         allele = self.phenotypes[0][0]
@@ -85,15 +93,7 @@ class PunnettSquare:
                 zygosity = self._detect_zygosity(gene1, gene2)
                 phenotype = self._find_phenotype(zygosity)
                 self._possible_phenotypes.append(phenotype)
-
-        # Only swaps the second and third genotypes/phenotypes if parents are dominant/recessive and heterozygous
-        a1 = self._possible_genotypes[1]
-        a2 = self._possible_genotypes[2]
-        if self._detect_zygosity(a1[0], a1[1]) == "Homozygous Recessive" or self._detect_zygosity(a1[0], a1[1]) == "Homozygous Dominant" and \
-            self._detect_zygosity(a2[0], a2[1]) == "Heterozygous" or self._detect_zygosity(a1[0], a1[1]) == "Heterozygous" and \
-                self._detect_zygosity(a2[0], a2[1]) == "Homozygous Recessive" or self._detect_zygosity(a2[0], a2[1]) == "Homozygous Dominant":
-            self._possible_genotypes[1], self._possible_genotypes[2] = self._possible_genotypes[2], self._possible_genotypes[1]
-            self._possible_phenotypes[1], self._possible_phenotypes[2] = self._possible_phenotypes[2], self._possible_phenotypes[1]
+        self._swap_genotypes(self._possible_genotypes[1], self._possible_genotypes[2])
         return self.get_possible_genotypes, self.get_possible_phenotypes
 
     def get_genotypic_ratio(self):

@@ -32,8 +32,8 @@ class TableFrame(tk.Frame):
                     label = tk.Label(self, text=f"{self.genotypes[1][i-1]}", borderwidth=1, relief="solid", bg="black", \
                         fg="white", font=("Helvetica", 16), width=5)
                 else:
-                    print(self.ps)
                     label = tk.Label(self, text=f"{self.ps[0][k]}", borderwidth=1, relief="solid", font=("Helvetica", 16), width=5)
                     k += 1
                 label.grid(row=i, column=j)
         self.grid_anchor("center")
+        print(self.ps)
