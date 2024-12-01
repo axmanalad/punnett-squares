@@ -40,8 +40,8 @@ class InputFrame(tk.Frame):
         self.parent2_cb = ttk.Combobox(self, values=zygosity, state="readonly", width=CB_WIDTH)
         self.parent2_cb.grid(row=3, column=1)
 
-        # Dominant and Recessive Phenotypes for the gene
-        self.phenotypes_label = tk.Label(self, text="Enter dominant and recessive phenotypes:", bg=BG_COLOR)
+        # Dominant, Recessive, and Heterozygous Phenotypes for the gene
+        self.phenotypes_label = tk.Label(self, text="Enter the following phenotypes:", bg=BG_COLOR)
         self.phenotypes_label.grid(row=4, column=0, columnspan=2)
         # Dominant
         self.dominant_label = tk.Label(self, text="Dominant:", bg=BG_COLOR)
@@ -53,9 +53,16 @@ class InputFrame(tk.Frame):
         self.recessive_label.grid(row=6, column=0)
         self.recessive_entry = tk.Entry(self, validate="key", validatecommand=(self.register(lambda x: x.isalpha()), "%S"))
         self.recessive_entry.grid(row=6, column=1)
+        # Heterozygous
+        self.heterozygous_label = tk.Label(self, text="Heterozygous:", bg=BG_COLOR)
+        self.heterozygous_label.grid(row=7, column=0)
+        self.heterozygous_entry = tk.Entry(self, validate="key", validatecommand=(self.register(lambda x: x.isalpha()), "%S"))
+        self.heterozygous_entry.grid(row=7, column=1)
+        self.heterozygous_label.grid_remove()
+        self.heterozygous_entry.grid_remove()
 
         self.calculate_button = tk.Button(self, text="Calculate", command=lambda: self.calculate())
-        self.calculate_button.grid(row=7, column=0, columnspan=2)
+        self.calculate_button.grid(row=8, column=0, columnspan=2)
 
         # Configure rows and columns to expand
         self.grid_rowconfigure(0, weight=1)
@@ -66,6 +73,8 @@ class InputFrame(tk.Frame):
         self.grid_rowconfigure(5, weight=1)
         self.grid_rowconfigure(6, weight=1)
         self.grid_rowconfigure(7, weight=1)
+        self.grid_rowconfigure(8, weight=1)
+        self.grid_rowconfigure(9, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
@@ -75,34 +84,50 @@ class InputFrame(tk.Frame):
         if selected_type == "Monohybrid":
             self.parent1_cb.config(values=["Homozygous Dominant", "Homozygous Recessive", "Heterozygous"])
             self.parent2_cb.config(values=["Homozygous Dominant", "Homozygous Recessive", "Heterozygous"])
-            self.phenotypes_label.grid()
-            self.dominant_label.grid()
-            self.dominant_entry.grid()
-            self.recessive_label.grid()
-            self.recessive_entry.grid()
+            self._show_phenotypes_widgets()
+            self.heterozygous_label.grid_remove()
+            self.heterozygous_entry.grid_remove()
+        elif selected_type == "Codominant":
+            self.parent1_cb.config(values=["Homozygous Dominant", "Homozygous Recessive", "Heterozygous"])
+            self.parent2_cb.config(values=["Homozygous Dominant", "Homozygous Recessive", "Heterozygous"])
+            self._show_phenotypes_widgets()
+            self.heterozygous_label.grid()
+            self.heterozygous_entry.grid()
         elif selected_type == "Blood":
             self.parent1_cb.config(values=["Type A", "Type B", "Type AB", "Type O"])
             self.parent2_cb.config(values=["Type A", "Type B", "Type AB", "Type O"])
-            self.parent1_cb.selection_clear()
-            self.parent2_cb.selection_clear()
             self.phenotypes_label.grid_remove()
             self.dominant_label.grid_remove()
             self.dominant_entry.grid_remove()
             self.recessive_label.grid_remove()
             self.recessive_entry.grid_remove()
-        self.clear_selections()
+            self.heterozygous_label.grid_remove()
+            self.heterozygous_entry.grid_remove()
+        self._clear_selections()
 
-    def clear_selections(self):
+    def _clear_selections(self):
         """Clears the selections in all inputs."""
         self.parent1_cb.set("")
         self.parent2_cb.set("")
         self.dominant_entry.delete(0, "end")
         self.recessive_entry.delete(0, "end")
+        self.heterozygous_entry.delete(0, "end")
+
+    def _show_phenotypes_widgets(self):
+        """Shows widgets for entering dominant and recessive phenotypes."""
+        self.phenotypes_label.grid()
+        self.dominant_label.grid()
+        self.dominant_entry.grid()
+        self.recessive_label.grid()
+        self.recessive_entry.grid()
 
     def calculate(self):
         """Calculates the genotypic and phenotypic ratios of the offspring."""
         self._validate()
-        self.phenotypes = [self.dominant_entry.get(), self.recessive_entry.get()]
+        if self.type_cb.get() == "Codominant":
+            self.phenotypes = [self.dominant_entry.get(), self.recessive_entry.get(), self.heterozygous_entry.get()]
+        else:
+            self.phenotypes = [self.dominant_entry.get(), self.recessive_entry.get()]
         parent1 = self.parent1_cb.get()
         parent2 = self.parent2_cb.get()
         if self.type_cb.get() == "Monohybrid":
@@ -125,22 +150,35 @@ class InputFrame(tk.Frame):
         if hasattr(self, "error_label"):
             self.error_label.destroy()
 
-        if len(self.parent1_cb.get()) < 1 or len(self.parent2_cb.get()) < 1:
+        parent1 = self.parent1_cb.get()
+        parent2 = self.parent2_cb.get()
+        dominant = self.dominant_entry.get()
+        recessive = self.recessive_entry.get()
+        heterozygous = self.heterozygous_entry.get() if hasattr(self, "heterozygous_entry") else ""
+
+        if not parent1 or not parent2:
             self._error("Please enter the zygosity of both parents.")
             raise ValueError("Please enter the zygosity of both parents.")
-        elif self.type_cb.get() == "Blood":
+        
+        if self.type_cb.get() == "Blood":
             return
-        elif len(self.dominant_entry.get()) < 1 or len(self.recessive_entry.get()) < 1:
-            self._error("Please enter a dominant and recessive phenotype.")
-            raise ValueError("Please enter a dominant and recessive phenotype.")
-        elif self.dominant_entry.get() == self.recessive_entry.get():
-            self._error("Dominant and recessive phenotypes cannot be the same.")
-            raise ValueError("Dominant and recessive phenotypes cannot be the same.")
+        
+        if self.type_cb.get() == "Codominant" and not heterozygous:
+            self._error("Please enter all phenotype boxes.")
+            raise ValueError("Please enter all phenotype boxes.")
+        
+        if dominant == heterozygous or recessive == heterozygous or dominant == recessive:
+            self._error("Two or more phenotypes cannot be the same.")
+            raise ValueError("Two or more phenotypes cannot be the same.")
+        
+        if not dominant or not recessive:
+            self._error("Please enter all phenotype boxes.")
+            raise ValueError("Please enter all phenotype boxes.")
 
     def _error(self, message: str):
         """Displays an error message."""
         if hasattr(self, "error_label"):
             self.error_label.destroy()
         self.error_label = tk.Label(self, text=message, fg="red")
-        self.error_label.grid(row=8, column=0, columnspan=2)
+        self.error_label.grid(row=9, column=0, columnspan=2)
     

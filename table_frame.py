@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 
 
 class TableFrame(tk.Frame):
@@ -36,4 +35,3 @@ class TableFrame(tk.Frame):
                     k += 1
                 label.grid(row=i, column=j)
         self.grid_anchor("center")
-        print(self.ps)
