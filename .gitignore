@@ -1,2 +1,8 @@
 # ignore ALL .pyc files
 *.pyc
+# ignore the virtualenv directory
+myenv/
+# ignore the build directory
+build/
+# ignore spec files
+*.spec
